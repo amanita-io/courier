@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "courier-tms"
+version = "0.1.0"
+description = "Courier for TMS (The Museum System): export your collection data to an open, documented schema, and sync media metadata. Read-focused, DML-only. Not endorsed by or affiliated with any collections management system vendor."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Jonathan Benoit", email = "jonathan@amanita.io" }]
+keywords = ["museum", "TMS", "collections", "GLAM", "migration", "export", "courier"]
+dependencies = []
+
+[project.optional-dependencies]
+# Pure-Python driver — works anywhere pip works, no system ODBC install needed.
+tds = ["python-tds>=1.15"]
+# Production driver — requires Microsoft ODBC Driver 17/18 for SQL Server.
+odbc = ["pyodbc>=5.0"]
+# Test suite (see tests/README.md).
+dev = ["pytest>=8.0", "python-tds>=1.15"]
+
+[project.scripts]
+courier-tms = "courier_tms.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["courier_tms"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "live: needs a real TMS database (skipped unless connection details are given)",
+    "creates_database: creates and drops a scratch database (needs --tms-allow-create-db)",
+    "slow: full-collection pass; minutes on a large database",
+]
+filterwarnings = ["ignore::DeprecationWarning:pytds.*"]
