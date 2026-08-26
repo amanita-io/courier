@@ -73,7 +73,7 @@ def test_lookups_load_and_are_cached(extractor):
     expected = {
         "classifications", "departments", "object_statuses", "roles", "title_types",
         "locations", "dimension_types", "dimension_units", "accession_methods",
-        "constituents", "object_name_types",
+        "constituents", "object_name_types", "constituent_types",
     }
     assert expected <= set(lookups)
     assert extractor.load_lookups() is lookups, "lookups should load once per extractor"
@@ -110,6 +110,52 @@ def test_every_record_normalises_into_a_valid_envelope(extractor):
         assert isinstance(envelope["properties"], dict)
         # the whole envelope has to survive a JSON round trip
         json.dumps(envelope, default=str)
+
+
+@pytest.mark.live
+def test_constituent_types_come_from_the_database_not_a_guess(tms_conn, extractor):
+    """Every exported constituent type must be one this TMS actually defines.
+
+    The previous implementation tested ConstituentTypeID == 1 and let
+    everything else fall through to "institution", so '(not entered)'
+    constituents — named artists and donors — were exported as
+    institutions. Whatever ConTypes holds is what gets exported; an
+    unlisted id yields None rather than a guess.
+    """
+    defined = set(extractor.load_lookups()["constituent_types"].values())
+    assert defined, "this TMS has no ConTypes rows"
+
+    seen = set()
+    for record in extractor.extract(limit=200):
+        for con in record["constituents"]:
+            seen.add(con["type"])
+
+    unexpected = {t for t in seen if t is not None} - defined
+    assert not unexpected, f"exported types absent from ConTypes: {unexpected}"
+
+
+@pytest.mark.live
+def test_a_person_is_never_labelled_an_institution(tms_conn, extractor):
+    """Shape check rather than a content assertion: a constituent with a
+    given and family name is not an institution, whatever id it carries."""
+    institution_types = {
+        t for t in extractor.load_lookups()["constituent_types"].values()
+        if t and "institution" in t.lower()
+    }
+    if not institution_types:
+        pytest.skip("no institution-like type in this TMS")
+
+    misfiled = [
+        con for record in extractor.extract(limit=200)
+        for con in record["constituents"]
+        if con["type"] in institution_types
+        and (con.get("first_name") or con.get("last_name"))
+        and not con.get("institution")
+    ]
+    assert not misfiled, (
+        f"{len(misfiled)} constituent(s) with a personal name exported as an "
+        f"institution, e.g. {misfiled[0]['display_name']!r}"
+    )
 
 
 @pytest.mark.live

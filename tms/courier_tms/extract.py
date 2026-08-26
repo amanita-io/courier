@@ -39,10 +39,6 @@ TABLE_ID_CONSTITUENTS = 23
 TABLE_ID_EXHIBITIONS = 47
 TABLE_ID_LOANS = 54
 
-# ConstituentTypeID
-CONSTITUENT_TYPE_PERSON = 1
-CONSTITUENT_TYPE_INSTITUTION = 2
-
 # Batch size for related-data queries. SQL Server allows ~2100 params
 # per statement; stay well under it.
 BATCH_SIZE = 500
@@ -146,6 +142,16 @@ class TMSExtractor:
 
         rows = self.db.query("SELECT ObjectNameTypeID, ObjectNameType FROM ObjectNameTypes")
         lookups["object_name_types"] = {r["ObjectNameTypeID"]: r["ObjectNameType"] for r in rows}
+
+        # ConTypes is the museum's own vocabulary — 'Individual' and
+        # 'Institution' are standard, but the table also carries
+        # '(not entered)' and whatever else an institution has added.
+        # Resolving it beats assuming: a hardcoded person/institution
+        # split silently files every unlisted type under one or other.
+        rows = self.db.query("SELECT ConstituentTypeID, ConstituentType FROM ConTypes")
+        lookups["constituent_types"] = {
+            r["ConstituentTypeID"]: r["ConstituentType"] for r in rows
+        }
 
         self._lookups = lookups
         return lookups
@@ -435,7 +441,7 @@ class TMSExtractor:
                     "first_name": con.get("FirstName"),
                     "last_name": con.get("LastName"),
                     "institution": con.get("Institution"),
-                    "type": "person" if con.get("ConstituentTypeID") == CONSTITUENT_TYPE_PERSON else "institution",
+                    "type": lookups["constituent_types"].get(con.get("ConstituentTypeID")),
                     "role": lookups["roles"].get(cx.get("RoleID"), "Unknown"),
                     "display_date": _safe_str(cx.get("DisplayDate")),
                     "prefix": _safe_str(cx.get("Prefix")),
