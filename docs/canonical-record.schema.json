@@ -1,0 +1,571 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/amanita-io/courier/blob/main/docs/canonical-record.schema.json",
+  "title": "Courier canonical record",
+  "description": "One canonical record, as emitted by a Courier extractor. Exports are newline-delimited JSON: one instance of this schema per line. This is Courier's own format, not LIDO, CIDOC-CRM, Linked Art or JSON-LD. See docs/canonical-format.md. Courier is pre-1.0 and this schema will change.",
+  "type": "object",
+  "required": [
+    "id",
+    "type",
+    "label",
+    "object_number",
+    "source",
+    "properties"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+:.+$",
+      "description": "'<system>:<source id>'. Unique within an export."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Object"
+      ],
+      "description": "Record kind. Only 'Object' is emitted today."
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Best human-readable name. Never empty."
+    },
+    "object_number": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Accession number. Never empty."
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "system",
+        "id"
+      ],
+      "properties": {
+        "system": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "description": "Provenance of the record."
+    },
+    "properties": {
+      "type": "object",
+      "description": "Cleaned, resolved values. Keys are OMITTED rather than set to null when the source had nothing: absence means 'no value', not 'unsupported'. Falsy values such as 0 are preserved.",
+      "properties": {
+        "object_number": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Accession number. Synthesised from the id when the source has none."
+        },
+        "object_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "classification": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Resolved from the source vocabulary."
+        },
+        "department": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Resolved."
+        },
+        "object_status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Resolved."
+        },
+        "dated": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Display date as catalogued."
+        },
+        "date_begin": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Search year. Omitted when the source value is 0."
+        },
+        "date_end": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Search year. Omitted when the source value is 0."
+        },
+        "medium": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "credit_line": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "signed": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inscribed": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "markings": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dimensions_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Display dimensions as catalogued."
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "curatorial_remarks": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Frequently non-public."
+        },
+        "public_access": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "0 or 1. Preserved when 0."
+        },
+        "on_view": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "0 or 1. Preserved when 0."
+        },
+        "current_location": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "First component location, formatted 'Site > Room > Unit > Number > Position'."
+        },
+        "context": {
+          "type": "object",
+          "description": "Cultural context. Omitted when every field is null.",
+          "properties": {
+            "culture": {},
+            "style": {},
+            "period": {},
+            "dynasty": {},
+            "movement": {},
+            "nationality": {},
+            "school": {}
+          }
+        },
+        "accession": {
+          "type": "object",
+          "description": "Acquisition detail. Omitted when every field is null.",
+          "properties": {
+            "method": {},
+            "value": {},
+            "source": {},
+            "date": {},
+            "lot": {},
+            "justification": {},
+            "authorizer": {},
+            "deed_sent": {},
+            "deed_received": {}
+          }
+        },
+        "titles": {
+          "type": "array",
+          "description": "Titles from the source's title table, in display order.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {},
+              "title_type": {},
+              "display_order": {}
+            },
+            "required": []
+          }
+        },
+        "creators": {
+          "type": "array",
+          "description": "Constituents whose role is Artist, Maker, Author or Photographer.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {},
+              "role": {},
+              "date": {}
+            },
+            "required": []
+          }
+        },
+        "all_constituents": {
+          "type": "array",
+          "description": "Every linked constituent, whatever the role. 'type' is the source's own term or null.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "constituent_id": {},
+              "display_name": {},
+              "first_name": {},
+              "last_name": {},
+              "institution": {},
+              "type": {},
+              "role": {},
+              "display_date": {},
+              "prefix": {},
+              "suffix": {},
+              "display_order": {}
+            },
+            "required": []
+          }
+        },
+        "dates": {
+          "type": "array",
+          "description": "Dated events beyond the primary date.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {},
+              "date_text": {},
+              "date_begin": {},
+              "date_end": {},
+              "remarks": {}
+            },
+            "required": []
+          }
+        },
+        "alt_numbers": {
+          "type": "array",
+          "description": "Alternate and historical numbers.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": {},
+              "description": {},
+              "remarks": {}
+            },
+            "required": []
+          }
+        },
+        "components": {
+          "type": "array",
+          "description": "Physical parts and their locations.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "component_id": {},
+              "name": {},
+              "number": {},
+              "current_location": {},
+              "home_location": {},
+              "trans_date": {},
+              "handler": {},
+              "physical_description": {},
+              "install_comments": {},
+              "storage_comments": {}
+            },
+            "required": []
+          }
+        },
+        "dimensions": {
+          "type": "array",
+          "description": "Structured measurements.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {},
+              "value": {},
+              "unit": {},
+              "display": {},
+              "description": {}
+            },
+            "required": []
+          }
+        },
+        "media": {
+          "type": "array",
+          "description": "Media records linked to the object.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "media_master_id": {},
+              "rank": {},
+              "primary_display": {},
+              "description": {},
+              "copyright": {},
+              "public_access": {},
+              "file_name": {},
+              "file_path": {},
+              "pixel_h": {},
+              "pixel_w": {},
+              "file_size": {}
+            },
+            "required": []
+          }
+        },
+        "exhibitions": {
+          "type": "array",
+          "description": "Exhibition history.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "exhibition_id": {},
+              "title": {},
+              "begin_date": {},
+              "end_date": {},
+              "section": {},
+              "catalogue_number": {}
+            },
+            "required": []
+          }
+        },
+        "conditions": {
+          "type": "array",
+          "description": "Condition reports.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "condition_id": {},
+              "examiner": {},
+              "survey_date": {},
+              "report_date": {},
+              "overall_analysis": {},
+              "remarks": {}
+            },
+            "required": []
+          }
+        },
+        "insurance": {
+          "type": "array",
+          "description": "Valuations. Non-public in most institutions.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {},
+              "date": {},
+              "appraiser": {}
+            },
+            "required": []
+          }
+        },
+        "text_entries": {
+          "type": "array",
+          "description": "Free-text entries.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text_type_id": {},
+              "text": {}
+            },
+            "required": []
+          }
+        },
+        "object_names": {
+          "type": "array",
+          "description": "Additional object names.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {},
+              "name_type": {},
+              "display_order": {}
+            },
+            "required": []
+          }
+        },
+        "vocabulary_terms": {
+          "type": "array",
+          "description": "Thesaurus links. 'term' is null when the thesaurus database is unavailable; 'term_id' is always present.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "xref_type": {},
+              "term": {},
+              "term_id": {},
+              "term_master_id": {},
+              "display_order": {},
+              "remarks": {}
+            },
+            "required": []
+          }
+        },
+        "user_fields": {
+          "type": "array",
+          "description": "Institution-local flex fields.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {},
+              "group": {},
+              "value": {},
+              "value_date": {},
+              "remarks": {},
+              "context_id": {}
+            },
+            "required": []
+          }
+        },
+        "geography": {
+          "type": "array",
+          "description": "Geographic associations.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "geocode": {},
+              "continent": {},
+              "subcontinent": {},
+              "country": {},
+              "region": {},
+              "state": {},
+              "county": {},
+              "city": {},
+              "locale": {},
+              "river": {},
+              "building": {},
+              "excavation": {},
+              "locus": {},
+              "notes": {}
+            },
+            "required": []
+          }
+        },
+        "references": {
+          "type": "array",
+          "description": "Bibliographic references.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "reference_id": {},
+              "heading": {},
+              "title": {},
+              "citation": {},
+              "year_published": {},
+              "page_number": {},
+              "catalogue_number": {},
+              "figure_number": {},
+              "remarks": {}
+            },
+            "required": []
+          }
+        },
+        "related_objects": {
+          "type": "array",
+          "description": "Object-to-object relationships, both directions.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "relation": {},
+              "related_object_id": {},
+              "related_object_number": {},
+              "related_object_name": {},
+              "display_date": {},
+              "remarks": {}
+            },
+            "required": []
+          }
+        },
+        "sites": {
+          "type": "array",
+          "description": "Site associations. 'subsites' is an array of strings.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "site_name": {},
+              "site_number": {},
+              "subsites": {},
+              "remarks": {}
+            },
+            "required": []
+          }
+        }
+      }
+    },
+    "media": {
+      "type": "array",
+      "description": "Canonical media references. Omitted entirely when no media has a filename.",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "label",
+          "role"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "image"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "alternate"
+            ]
+          }
+        }
+      }
+    },
+    "raw": {
+      "type": "object",
+      "description": "The complete source record, untouched. Present only when exported with --raw; a default export omits it and is therefore a lossy projection."
+    }
+  }
+}

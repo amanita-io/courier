@@ -31,6 +31,9 @@ courier-tms export --host ... --database ... --username ... --password ... \
     --out collection.ndjson --media-manifest media.csv [--raw] [--limit N]
 ```
 
+The record format is specified in
+[docs/canonical-format.md](../docs/canonical-format.md).
+
 `--raw` embeds the untouched TMS source record in each envelope so the
 export is lossless. `--media-manifest` writes a CSV of every media file
 referenced, for copying the files themselves.

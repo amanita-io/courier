@@ -19,7 +19,7 @@ tds = ["python-tds>=1.15"]
 # Production driver — requires Microsoft ODBC Driver 17/18 for SQL Server.
 odbc = ["pyodbc>=5.0"]
 # Test suite (see tests/README.md).
-dev = ["pytest>=8.0", "python-tds>=1.15"]
+dev = ["pytest>=8.0", "python-tds>=1.15", "jsonschema>=4.0"]
 
 [project.scripts]
 courier-tms = "courier_tms.cli:main"

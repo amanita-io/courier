@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import csv
 import json
+import pathlib
 
 import pytest
 
@@ -156,6 +157,38 @@ def test_a_person_is_never_labelled_an_institution(tms_conn, extractor):
         f"{len(misfiled)} constituent(s) with a personal name exported as an "
         f"institution, e.g. {misfiled[0]['display_name']!r}"
     )
+
+
+@pytest.mark.live
+def test_exported_records_match_the_published_schema(extractor):
+    """docs/canonical-record.schema.json is a contract, not a description.
+
+    Validates both shapes an export can take: with --raw and without.
+    If this fails, either the extractor changed or the published schema
+    is now a lie — and the second is worse.
+    """
+    jsonschema = pytest.importorskip("jsonschema")
+
+    schema_path = (
+        pathlib.Path(__file__).resolve().parents[2] / "docs" / "canonical-record.schema.json"
+    )
+    assert schema_path.exists(), f"published schema missing at {schema_path}"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    jsonschema.Draft202012Validator.check_schema(schema)
+    validator = jsonschema.Draft202012Validator(schema)
+
+    checked = 0
+    for record in extractor.extract(limit=100):
+        envelope = normalize(record)
+        lean = {k: v for k, v in envelope.items() if k != "raw"}
+        for shape, instance in (("--raw", envelope), ("default", lean)):
+            errors = sorted(validator.iter_errors(instance), key=str)
+            assert not errors, (
+                f"{shape} export of {envelope['id']} violates the published schema: "
+                f"{errors[0].message}"
+            )
+            checked += 1
+    assert checked, "no records were validated"
 
 
 @pytest.mark.live

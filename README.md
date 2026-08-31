@@ -52,7 +52,10 @@ Every solution follows the same rules:
 - **No vendor-schema modification.** Nothing is ever installed into the
   source database — no tables, no procedures, no jobs. Plain read (and,
   where a solution writes, plain DML) permissions only.
-- **Open output.** Exports are documented NDJSON/CSV any system can import.
+- **Open output.** Exports are newline-delimited JSON plus a CSV media
+  manifest, specified in [docs/canonical-format.md](docs/canonical-format.md)
+  with a [JSON Schema](docs/canonical-record.schema.json) the test suite
+  enforces.
 
 ## Quick start (TMS)
 
