@@ -251,6 +251,17 @@ def test_cli_export_writes_one_json_object_per_line(tms_config, tmp_path):
 
 
 @pytest.mark.live
+def test_cli_export_records_the_institution(tms_config, tmp_path):
+    out = tmp_path / "attributed.ndjson"
+    assert main([
+        "export", *cli_args(tms_config), "--limit", "5", "--out", str(out),
+        "--institution", "Example Museum of Art",
+    ]) == 0
+    for line in out.read_text(encoding="utf-8").splitlines():
+        assert json.loads(line)["source"]["institution"] == "Example Museum of Art"
+
+
+@pytest.mark.live
 def test_cli_export_omits_the_raw_record_unless_asked(tms_config, tmp_path):
     lean = tmp_path / "lean.ndjson"
     full = tmp_path / "full.ndjson"

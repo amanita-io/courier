@@ -45,7 +45,7 @@ with open("collection.ndjson", encoding="utf-8") as f:
   "type": "Object",
   "label": "Sunrise over the Harbour",
   "object_number": "1998.1.1",
-  "source": { "system": "tms", "id": "1042" },
+  "source": { "system": "tms", "id": "1042", "institution": "Example Museum of Art" },
   "properties": { },
   "media": [ ],
   "raw": { }
@@ -58,10 +58,19 @@ with open("collection.ndjson", encoding="utf-8") as f:
 | `type` | string | yes | Currently always `"Object"`. Reserved for future record kinds. |
 | `label` | string | yes | Best human-readable name. First non-empty `ObjTitles` entry, else the object name, else the legacy title column, else `"Object <object_number>"`. Never empty. |
 | `object_number` | string | yes | The accession number. Synthesised as `<SYSTEM>-<id>` when the source has none, so it is never empty. |
-| `source` | object | yes | `{"system": "tms", "id": "<source id>"}` — provenance of the record. |
+| `source` | object | yes | `system` and `id` always; `institution` when the export supplied one. See below. |
 | `properties` | object | yes | Cleaned, resolved values. See below. |
 | `media` | array | **no** | Canonical media references. Omitted entirely when the object has no media with a filename. |
 | `raw` | object | **no** | The complete source record, untouched. Present only when the export was run with `--raw`. |
+
+### Naming the institution
+
+`source.institution` records the organisation the records came from. It is
+omitted unless the export supplied one (`courier-tms export --institution ...`),
+and **it cannot be added afterwards** — nothing else in the file identifies the
+source, so an unattributed export stays unattributed unless you still have the
+database and remember which one it was. Supply it. Exports that omit it emit a
+warning.
 
 ### Absence is meaningful
 

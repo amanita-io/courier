@@ -34,6 +34,20 @@ def test_envelope_carries_a_namespaced_id_and_source():
     assert env["source"] == {"system": "tms", "id": "42"}
 
 
+def test_institution_is_recorded_in_source_when_supplied():
+    """Nothing else in an export says which organisation produced it, and
+    it cannot be added once the file exists."""
+    env = normalize(record(), institution="Example Museum of Art")
+    assert env["source"] == {
+        "system": "tms", "id": "42", "institution": "Example Museum of Art",
+    }
+
+
+def test_institution_is_omitted_rather_than_null_when_absent():
+    assert "institution" not in normalize(record())["source"]
+    assert "institution" not in normalize(record(), institution="")["source"]
+
+
 def test_raw_record_is_preserved_verbatim():
     """Nothing may be lost in normalisation: an old export has to be
     remappable years later without going back to the museum."""

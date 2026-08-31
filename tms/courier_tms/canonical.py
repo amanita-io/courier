@@ -7,7 +7,7 @@ Every extracted TMS object becomes one canonical envelope:
       "type": "Object",
       "label": "<primary title>",
       "object_number": "<accession number>",
-      "source": {"system": "tms", "id": "<ObjectID>"},
+      "source": {"system": "tms", "id": "<ObjectID>", "institution": "<name>"},
       "properties": { ...flat + nested collection data... },
       "media": [ {id, type, label, role}, ... ],
       "raw": { ...the full denormalized TMS record, untouched... }
@@ -28,8 +28,15 @@ from typing import Any
 CREATOR_ROLES = ("Artist", "Maker", "Author", "Photographer")
 
 
-def normalize(record: dict[str, Any]) -> dict[str, Any]:
-    """Convert a denormalized TMS record into a canonical envelope."""
+def normalize(record: dict[str, Any], institution: str | None = None) -> dict[str, Any]:
+    """Convert a denormalized TMS record into a canonical envelope.
+
+    ``institution`` names the organisation the records came from. It is
+    recorded in ``source`` because nothing else in the file identifies
+    it: an export that omits it cannot be attributed later without
+    going back to whoever produced it. Omitted from the envelope when
+    not supplied, per the usual absence rule.
+    """
     source_id = str(record["ObjectID"])
     object_number = record.get("ObjectNumber") or f"TMS-{source_id}"
 
@@ -124,12 +131,16 @@ def normalize(record: dict[str, Any]) -> dict[str, Any]:
         if m.get("file_name")
     ]
 
+    source = {"system": "tms", "id": source_id}
+    if institution:
+        source["institution"] = institution
+
     envelope: dict[str, Any] = {
         "id": f"tms:{source_id}",
         "type": "Object",
         "label": primary_title,
         "object_number": object_number,
-        "source": {"system": "tms", "id": source_id},
+        "source": source,
         "properties": properties,
     }
     if canonical_media:

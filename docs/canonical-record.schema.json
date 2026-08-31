@@ -47,9 +47,13 @@
         },
         "id": {
           "type": "string"
+        },
+        "institution": {
+          "type": "string",
+          "description": "Organisation the records came from. Omitted when the export did not supply one."
         }
       },
-      "description": "Provenance of the record."
+      "description": "Provenance of the record. 'institution' is optional but strongly recommended: without it nothing in the file says who produced it."
     },
     "properties": {
       "type": "object",

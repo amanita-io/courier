@@ -102,8 +102,13 @@ def cmd_export(args: argparse.Namespace) -> int:
         extractor = TMSExtractor(conn, thes_database=args.thes_database)
         total = extractor.count_objects()
         logger.info("Exporting %s objects from %s/%s", total, args.host, args.database)
+        if not args.institution:
+            logger.warning(
+                "No --institution given: this export will not record which "
+                "organisation it came from, and that cannot be added later."
+            )
         for record in extractor.extract(limit=args.limit):
-            envelope = normalize(record)
+            envelope = normalize(record, institution=args.institution)
             if not args.raw:
                 envelope.pop("raw", None)
             out.write(json.dumps(envelope, default=_json_default, ensure_ascii=False))
@@ -185,6 +190,12 @@ def main(argv: list[str] | None = None) -> int:
 
     p_export = sub.add_parser("export", help="Export all objects as canonical NDJSON")
     _add_connection_args(p_export)
+    p_export.add_argument(
+        "--institution",
+        help="Name of the organisation these records belong to, recorded in "
+        "each envelope. Strongly recommended: nothing else in the file "
+        "identifies the source, and it cannot be added after the fact.",
+    )
     p_export.add_argument("--out", help="Output file (default: stdout)")
     p_export.add_argument("--limit", type=int, default=None, help="Export at most N objects")
     p_export.add_argument(
